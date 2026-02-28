@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(powershell:*)",
+      "Bash(rm:*)",
+      "Bash(test:*)",
+      "Bash(npm install:*)",
+      "Bash(netstat -ano)",
+      "Bash(xargs -r -I{} taskkill /PID {} /F)"
+    ]
+  }
+}

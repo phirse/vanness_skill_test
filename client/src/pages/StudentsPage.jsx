@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { getStudents } from '../api/students.api';
 
 export default function StudentsPage() {
@@ -38,9 +37,7 @@ export default function StudentsPage() {
             {filtered.map((s) => (
               <tr key={s.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium">
-                  <Link to={`/students/${s.id}`} className="text-indigo-600 hover:underline">
-                    {s.name}
-                  </Link>
+                  <span className="text-gray-800">{s.name}</span>
                 </td>
                 <td className="px-4 py-3 text-gray-600">{s.email}</td>
                 <td className="px-4 py-3 text-gray-600">{s.studentId ?? '—'}</td>

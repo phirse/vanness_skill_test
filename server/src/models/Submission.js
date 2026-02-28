@@ -14,6 +14,8 @@ const SubmissionSchema = new Schema(
     assignment: { type: Schema.Types.ObjectId, ref: 'Assignment', required: true },
     student: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     submittedAt: { type: Date },
+    fileUrl: { type: String },
+    fileName: { type: String },
     score: { type: Number, min: 0 },
     notes: [NoteSchema],
   },

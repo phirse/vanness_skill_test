@@ -10,8 +10,17 @@ export async function getMySubmission(assignmentId) {
   return res.data;
 }
 
-export async function submitAssignment(assignmentId) {
-  const res = await axiosInstance.post(`/submissions/${assignmentId}/submit`);
+export async function submitAssignment(assignmentId, file) {
+  const formData = new FormData();
+  if (file) formData.append('file', file);
+  const res = await axiosInstance.post(`/submissions/${assignmentId}/submit`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+export async function unsubmitAssignment(assignmentId) {
+  const res = await axiosInstance.patch(`/submissions/${assignmentId}/unsubmit`);
   return res.data;
 }
 

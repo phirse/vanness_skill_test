@@ -8,6 +8,7 @@ import {
   getSubmissionsForAssignment,
   getMySubmission,
   submitAssignment,
+  unsubmitAssignment,
   gradeSubmission,
   addNote,
 } from '../api/submissions.api';
@@ -75,6 +76,16 @@ function InstructorView({ assignment }) {
                 <p className="text-xs text-gray-400">{row.student.email}</p>
               </div>
               <StatusBadge status={status} />
+              {sub?.fileUrl && (
+                <a
+                  href={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${sub.fileUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-indigo-600 hover:underline ml-2"
+                >
+                  {sub.fileName ?? 'Download file'}
+                </a>
+              )}
             </div>
 
             {sub && (
@@ -140,6 +151,7 @@ function StudentView({ assignment }) {
   const [submission, setSubmission] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [file, setFile] = useState(null);
 
   const load = () => getMySubmission(assignment._id).then(setSubmission);
   useEffect(() => { load(); }, []);
@@ -151,13 +163,24 @@ function StudentView({ assignment }) {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await submitAssignment(assignment._id);
+      await submitAssignment(assignment._id, file);
       toast.success('Assignment submitted!');
+      setFile(null);
       load();
     } catch {
       toast.error('Failed to submit');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleUnsubmit = async () => {
+    try {
+      await unsubmitAssignment(assignment._id);
+      toast.success('Submission withdrawn');
+      load();
+    } catch {
+      toast.error('Failed to unsubmit');
     }
   };
 
@@ -194,13 +217,40 @@ function StudentView({ assignment }) {
             )}
           </div>
         </div>
+        {submission?.fileUrl && (
+          <div className="mb-3">
+            <a
+              href={`${import.meta.env.VITE_API_URL?.replace('/api', '')}${submission.fileUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-indigo-600 hover:underline"
+            >
+              {submission.fileName ?? 'Attached file'}
+            </a>
+          </div>
+        )}
         {!submission?.submittedAt && (
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="text-sm file:mr-3 file:px-3 file:py-1.5 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700 file:text-sm file:font-medium hover:file:bg-indigo-100"
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              {submitting ? 'Submitting…' : 'Submit Assignment'}
+            </button>
+          </div>
+        )}
+        {submission?.submittedAt && submission?.score == null && (
           <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 disabled:opacity-50"
+            onClick={handleUnsubmit}
+            className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
           >
-            {submitting ? 'Submitting…' : 'Submit Assignment'}
+            Unsubmit
           </button>
         )}
       </div>

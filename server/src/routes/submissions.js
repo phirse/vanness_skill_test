@@ -1,10 +1,16 @@
 import mongoose from 'mongoose';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { Router } from 'express';
 import { protect } from '../middleware/auth.js';
 import { requireInstructor, attachRole } from '../middleware/role.js';
+import upload from '../middleware/upload.js';
 import User from '../models/User.js';
 import Assignment from '../models/Assignment.js';
 import Submission from '../models/Submission.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 
@@ -67,6 +73,7 @@ router.post(
   '/:assignmentId/submit',
   protect,
   attachRole,
+  upload.single('file'),
   async (req, res) => {
     try {
       if (req.userRole === 'instructor') {
@@ -74,11 +81,59 @@ router.post(
         return;
       }
 
+      const updateData = { submittedAt: new Date() };
+      if (req.file) {
+        updateData.fileUrl = `/uploads/${req.file.filename}`;
+        updateData.fileName = req.file.originalname;
+      }
+
       const submission = await Submission.findOneAndUpdate(
         { assignment: req.params.assignmentId, student: req.userId },
-        { $set: { submittedAt: new Date() } },
+        { $set: updateData },
         { upsert: true, new: true }
       );
+      res.json(submission);
+    } catch {
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// PATCH /api/submissions/:assignmentId/unsubmit — student unsubmits
+router.patch(
+  '/:assignmentId/unsubmit',
+  protect,
+  attachRole,
+  async (req, res) => {
+    try {
+      if (req.userRole === 'instructor') {
+        res.status(403).json({ message: 'Instructors cannot unsubmit' });
+        return;
+      }
+
+      const submission = await Submission.findOne({
+        assignment: req.params.assignmentId,
+        student: req.userId,
+      });
+      if (!submission) {
+        res.status(404).json({ message: 'Submission not found' });
+        return;
+      }
+      if (submission.score != null) {
+        res.status(400).json({ message: 'Cannot unsubmit a graded assignment' });
+        return;
+      }
+
+      // Delete uploaded file from disk
+      if (submission.fileUrl) {
+        const filePath = path.join(__dirname, '../../uploads', path.basename(submission.fileUrl));
+        fs.unlink(filePath, () => {});
+      }
+
+      submission.submittedAt = undefined;
+      submission.fileUrl = undefined;
+      submission.fileName = undefined;
+      await submission.save();
       res.json(submission);
     } catch {
       res.status(500).json({ message: 'Server error' });
