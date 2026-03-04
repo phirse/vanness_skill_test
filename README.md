@@ -52,6 +52,10 @@ npm run dev
 - Client: http://localhost:5173
 - Server: http://localhost:5000
 
+## Deployment
+
+- Currently Running at: https://vanness-skill-test-client.vercel.app/
+
 ## Test Credentials
 
 After running the seed script:
