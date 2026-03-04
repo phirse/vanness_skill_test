@@ -64,10 +64,10 @@ After running the seed script:
 
 | Role | Email | Password |
 |---|---|---|
-| Instructor | instructor@test.com | password123 |
-| Student 1 | student1@test.com | password123 |
-| Student 2 | student2@test.com | password123 |
-| Student 3 | student3@test.com | password123 |
+| Instructor | InstructorTest@test.com | password123 |
+| Student 1 | StudentTest@test.com | password123 |
+| Student 2 | StudentTest2@test.com | password123 |
+| Student 3 | StudentTest3@test.com | password123 |
 
 ## Developer
 
