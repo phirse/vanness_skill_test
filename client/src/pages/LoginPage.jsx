@@ -18,8 +18,9 @@ export default function LoginPage() {
       const data = await login(email, password);
       authLogin(data.token, data.user);
       navigate('/dashboard');
-    } catch {
-      toast.error('Invalid email or password');
+    } catch (err) {
+      const msg = err.response?.data?.message ?? 'Invalid email or password';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
